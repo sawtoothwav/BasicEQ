@@ -21,6 +21,7 @@ public:
     ~BasicEQAudioProcessor() override;
 
     //==============================================================================
+    // Called by host when playback is about to begin.
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
 
@@ -28,6 +29,9 @@ public:
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
    #endif
 
+    /* Called by host when the play button is hit.
+     * If this is interrupted, it can cause pops or other problems.
+     */
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
     //==============================================================================

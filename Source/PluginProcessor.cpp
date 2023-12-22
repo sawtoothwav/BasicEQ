@@ -129,6 +129,7 @@ bool BasicEQAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) 
 }
 #endif
 
+// This is where you get allocated audio data (buffer) and can work with midi messages.
 void BasicEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;

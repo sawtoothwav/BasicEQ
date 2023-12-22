@@ -23,6 +23,7 @@ BasicEQAudioProcessorEditor::~BasicEQAudioProcessorEditor()
 }
 
 //==============================================================================
+// This is where the graphical information and UI happens.
 void BasicEQAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
@@ -33,6 +34,7 @@ void BasicEQAudioProcessorEditor::paint (juce::Graphics& g)
     g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
 }
 
+// Examples of subcomponents include buttons, knobs, sliders, spectrum analyzers, etc.
 void BasicEQAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
