@@ -167,7 +167,10 @@ bool BasicEQAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* BasicEQAudioProcessor::createEditor()
 {
-    return new BasicEQAudioProcessorEditor (*this);
+    //return new BasicEQAudioProcessorEditor (*this);
+    
+    // Before we've added our parameters to the GUI, we can use an Audio Processor Editor to view and edit them.
+    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -182,6 +185,80 @@ void BasicEQAudioProcessor::setStateInformation (const void* data, int sizeInByt
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout
+    BasicEQAudioProcessor::createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+    
+        /* Low Cut Frequency
+         * Range: 20Hz - 20,000Hz. Incremented by 1Hz, no skew. Default value of 20Hz (Min of human hearing).
+         */
+        layout.add(std::make_unique<juce::AudioParameterFloat>("LowCut Freq", 
+                                                               "LowCut Freq",
+                                                               juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+                                                               20.f));
+        
+        /* High Cut Frequency
+         * Range: 20Hz - 20,000Hz. Incremented by 1Hz, no skew. Default value of 20,000Hz (Max of human hearing).
+         */
+        layout.add(std::make_unique<juce::AudioParameterFloat>("HighCut Freq",
+                                                               "HighCut Freq",
+                                                               juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+                                                               20000.f));
+        
+        /* Peak Frequency - Adjust decibels around a certain frequency.
+         * Range: 20Hz - 20,000Hz. Incremented by 1Hz, no skew. Default value of 750Hz
+         */
+        layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Freq",
+                                                               "Peak Freq",
+                                                               juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+                                                               750.f));
+        
+        /* Peak Gain - The amount to adjust the decibels around our peak frequency.
+         * Range: -24dB to 24dB. Incremented by 0.1dB, no skew. Default value of 0dB (flat)
+         */
+        layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Gain",
+                                                               "Peak Gain",
+                                                               juce::NormalisableRange<float>(-24.f, 24.f, 0.1f, 1.f),
+                                                               0.0f));
+        
+        /* Peak Quality - The "width" of the peak. A higher quality represents a thinner peak.
+         * Range: 0.1 to 10. Incremented by 0.1, no skew. Default value of 1.
+         */
+        layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Gain",
+                                                               "Peak Gain",
+                                                               juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f),
+                                                               1.f));
+        
+        /* Filter Array: AudioParameterChoice objects use an array to store the options.
+         * Due to how the math works out (still learning about this) you want the slopes of
+         * high / low pass filters to be factors of 6 or 12 dB/Oct for best results.
+         */
+        juce::StringArray filterArray;
+        for(int i = 0; i < 4; ++i) {
+            juce::String str;
+            // Start at 12dB, then 24dB, then 36dB...
+            str << (12 + i*12);
+            // Concat " db/Oct" to the end of the string; C++ overloads << and >>, making them tools for working w/ strings & streams.
+            str << " dB/Oct";
+            filterArray.add(str);
+        }
+        
+        /* Low Cut Slope - The slope for our low cut filter.
+         * Uses the filterArray to choose options and has a default starting index of 0 (12 dB/Oct).
+         */
+        layout.add(std::make_unique<juce::AudioParameterChoice>("Low Cut Slope", "Low Cut Slope", filterArray, 0));
+        
+        /* High Cut Slope - The slope for our high cut filter.
+         * Uses the filterArray to choose options and has a default starting index of 0 (12 dB/Oct).
+         */
+        layout.add(std::make_unique<juce::AudioParameterChoice>("Low Cut Slope", "Low Cut Slope", filterArray, 0));
+        
+        // These parameters are all added to our APVTS by the createParameterLayout call in PluginProcessor.h
+    
+    return layout;
 }
 
 //==============================================================================
