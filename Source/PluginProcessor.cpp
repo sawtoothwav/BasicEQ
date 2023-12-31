@@ -195,7 +195,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout
         /* Low Cut Frequency
          * Range: 20Hz - 20,000Hz. Incremented by 1Hz, no skew. Default value of 20Hz (Min of human hearing).
          */
-        layout.add(std::make_unique<juce::AudioParameterFloat>("LowCut Freq", 
+        layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"LowCut Freq", 1},
                                                                "LowCut Freq",
                                                                juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
                                                                20.f));
@@ -203,7 +203,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout
         /* High Cut Frequency
          * Range: 20Hz - 20,000Hz. Incremented by 1Hz, no skew. Default value of 20,000Hz (Max of human hearing).
          */
-        layout.add(std::make_unique<juce::AudioParameterFloat>("HighCut Freq",
+        layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"HighCut Freq", 1},
                                                                "HighCut Freq",
                                                                juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
                                                                20000.f));
@@ -211,7 +211,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout
         /* Peak Frequency - Adjust decibels around a certain frequency.
          * Range: 20Hz - 20,000Hz. Incremented by 1Hz, no skew. Default value of 750Hz
          */
-        layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Freq",
+        layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"Peak Freq", 1},
                                                                "Peak Freq",
                                                                juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
                                                                750.f));
@@ -219,7 +219,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout
         /* Peak Gain - The amount to adjust the decibels around our peak frequency.
          * Range: -24dB to 24dB. Incremented by 0.1dB, no skew. Default value of 0dB (flat)
          */
-        layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Gain",
+        layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"Peak Gain", 1},
                                                                "Peak Gain",
                                                                juce::NormalisableRange<float>(-24.f, 24.f, 0.1f, 1.f),
                                                                0.0f));
@@ -227,8 +227,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout
         /* Peak Quality - The "width" of the peak. A higher quality represents a thinner peak.
          * Range: 0.1 to 10. Incremented by 0.1, no skew. Default value of 1.
          */
-        layout.add(std::make_unique<juce::AudioParameterFloat>("Peak Gain",
-                                                               "Peak Gain",
+        layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {"Peak Quality", 1},
+                                                               "Peak Quality",
                                                                juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f),
                                                                1.f));
         
@@ -249,12 +249,16 @@ juce::AudioProcessorValueTreeState::ParameterLayout
         /* Low Cut Slope - The slope for our low cut filter.
          * Uses the filterArray to choose options and has a default starting index of 0 (12 dB/Oct).
          */
-        layout.add(std::make_unique<juce::AudioParameterChoice>("Low Cut Slope", "Low Cut Slope", filterArray, 0));
+        layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID {"Low Cut Slope", 1},
+                                                                "Low Cut Slope",
+                                                                filterArray, 0));
         
         /* High Cut Slope - The slope for our high cut filter.
          * Uses the filterArray to choose options and has a default starting index of 0 (12 dB/Oct).
          */
-        layout.add(std::make_unique<juce::AudioParameterChoice>("Low Cut Slope", "Low Cut Slope", filterArray, 0));
+        layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID {"High Cut Slope", 1},
+                                                                "High Cut Slope",
+                                                                filterArray, 0));
         
         // These parameters are all added to our APVTS by the createParameterLayout call in PluginProcessor.h
     
