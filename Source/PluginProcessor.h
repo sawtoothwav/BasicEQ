@@ -62,7 +62,28 @@ public:
         createParameterLayout();
     // This is the APVTS
     juce::AudioProcessorValueTreeState apvts {*this, nullptr, "Parameters", createParameterLayout()};
+    
+    // Here we will declare some type aliases to simplify namespaces & definitions.
 private:
+    
+    /* This is a filter alias for processing floats. The filters in the IIR class have a response of 12dB/oct when
+     * configured as a low / high pass filter.
+     */
+    using Filter = juce::dsp::IIR::Filter<float>;
+    
+    /* This is an alias for a chain of 4 of the above filters; you need one filter per 12dB, so a chain of 4 filters
+     * = a shift of 48dB/oct.
+     * These aliases are flexible and could be used for a variety of different filters.
+     */
+    using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
+    
+    /* This chain represents the whole mono signal path; a high pass filter, a peak filter, and a low pass filter.
+     * For stereo processing, we can use 2 instances of this mono chain.
+     */
+    using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
+    
+    // Declaring two chains for stereo processing; one per channel.
+    MonoChain leftChain, rightChain;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BasicEQAudioProcessor)
 };

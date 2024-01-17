@@ -95,6 +95,24 @@ void BasicEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    
+    /* We must prepare any filters before we use them; this is done by using a process
+     * spec object for the chains.
+     */
+    juce::dsp::ProcessSpec spec;
+    
+    // The spec needs to know the maximum amount of samples it'll process at once.
+    spec.maximumBlockSize = samplesPerBlock;
+    
+    // The spec needs to know the number of channels
+    spec.numChannels = 1;
+    
+    // The spec needs to know the sample rate.
+    spec.sampleRate = sampleRate;
+    
+    // Now we can prepare the left & right mono chains using the spec.
+    leftChain.prepare(spec);
+    rightChain.prepare(spec);
 }
 
 void BasicEQAudioProcessor::releaseResources()
