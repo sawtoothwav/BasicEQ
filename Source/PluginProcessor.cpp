@@ -169,12 +169,30 @@ void BasicEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
-    }
+    
+    /* The processor chain requires a processing context in order to properly
+     * run the audio through each link in the chain. To make the context,
+     * we need to provide an audio block instance.
+     * The processBlock function is called by the host and given a buffer
+     * which can have any number of channels; we need to find the left and right
+     * channel from this buffer. Left and Right are typically channels 0 and 1,
+     * respectively.
+     */
+    
+    // First the block; initialized for processing floats.
+    juce::dsp::AudioBlock<float> block(buffer);
+    
+    // Now we can use helper functions to extract individual channels, wrapped in their own blocks.
+    auto leftBlock = block.getSingleChannelBlock(0);
+    auto rightBlock = block.getSingleChannelBlock(1);
+    
+    // Now we set up our processing contexts for each channel's block.
+    juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
+    juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
+    
+    // Now we provide these contexts to the filter chains.
+    leftChain.process(leftContext);
+    rightChain.process(rightContext);
 }
 
 //==============================================================================
