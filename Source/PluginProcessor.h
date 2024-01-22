@@ -10,6 +10,21 @@
 
 #include <JuceHeader.h>
 
+// A structure to hold settings for a processing chain.
+struct ChainSettings
+{
+    float peakFrequency { 0 };
+    float peakGainDecibels { 0 };
+    float peakQuality { 1.f };
+    float lowCutFrequency { 0 };
+    float highCutFrequency { 0 };
+    int lowCutSlope { 0 };
+    int highCutSlope { 0 };
+};
+
+// A function to return a settings struct, given an APVTS.
+ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts);
+
 //==============================================================================
 /**
 */
@@ -84,6 +99,13 @@ private:
     
     // Declaring two chains for stereo processing; one per channel.
     MonoChain leftChain, rightChain;
+    
+    // An enum to store the indexes of different links in the chain for ease of use.
+    enum ChainPositions {
+        LowCut,
+        Peak,
+        HighCut
+    };
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BasicEQAudioProcessor)
 };

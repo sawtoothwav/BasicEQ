@@ -113,6 +113,31 @@ void BasicEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     // Now we can prepare the left & right mono chains using the spec.
     leftChain.prepare(spec);
     rightChain.prepare(spec);
+    
+    // Get our chain settings.
+    auto chainSettings = getChainSettings(apvts);
+    
+    /* Create a coefficient set for our peak filter.
+     * The gain parameter expects gain in gain units, not dB, so we will have to convert.
+     */
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+                                                                                chainSettings.peakFrequency,
+                                                                                chainSettings.peakQuality,
+                                                                                juce::Decibels::decibelsToGain(chainSettings.peakGainDecibels));
+    
+    /* You can access links in the chain through the get() function, using an index.
+     * We will use an enum to make this easier to use.
+     *
+     * The coefficients objects are reference-counted objects that each own a juce::Array<float>.
+     * The helpfer functions return the instances on the heap, so they must be dereferenced to get
+     * the underlying coefficients.
+     * Allocating on the heap in an audio callback is generally not a good idea.
+     *
+     * This step is where audible changes begin to occur, but in order for the plugin to work when
+     * changing sliders, we have to have it update these coefficients when the sliders move.
+     */
+    *leftChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+    *rightChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
 }
 
 void BasicEQAudioProcessor::releaseResources()
@@ -223,6 +248,25 @@ void BasicEQAudioProcessor::setStateInformation (const void* data, int sizeInByt
     // whose contents will have been created by the getStateInformation() call.
 }
 
+ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts) {
+    ChainSettings settings;
+    
+    /* We don't use the getValue() function here because it returns normalised values,
+     * but our program expects real-world values. We will instead use getRawParameterValue().
+     * These values are atomic, thanks to the load() call.
+     */
+    
+    settings.lowCutFrequency  = apvts.getRawParameterValue("LowCut Freq")->load();
+    settings.highCutFrequency = apvts.getRawParameterValue("HighCut Freq")->load();
+    settings.peakFrequency    = apvts.getRawParameterValue("Peak Freq")->load();
+    settings.peakGainDecibels = apvts.getRawParameterValue("Peak Gain")->load();
+    settings.peakQuality      = apvts.getRawParameterValue("Peak Quality")->load();
+    settings.lowCutSlope      = apvts.getRawParameterValue("LowCut Slope")->load();
+    settings.highCutSlope     = apvts.getRawParameterValue("HighCut Slope")->load();
+    
+    return settings;
+}
+
 juce::AudioProcessorValueTreeState::ParameterLayout
     BasicEQAudioProcessor::createParameterLayout()
 {
@@ -285,15 +329,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout
         /* Low Cut Slope - The slope for our low cut filter.
          * Uses the filterArray to choose options and has a default starting index of 0 (12 dB/Oct).
          */
-        layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID {"Low Cut Slope", 1},
-                                                                "Low Cut Slope",
+        layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID {"LowCut Slope", 1},
+                                                                "LowCut Slope",
                                                                 filterArray, 0));
         
         /* High Cut Slope - The slope for our high cut filter.
          * Uses the filterArray to choose options and has a default starting index of 0 (12 dB/Oct).
          */
-        layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID {"High Cut Slope", 1},
-                                                                "High Cut Slope",
+        layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID {"HighCut Slope", 1},
+                                                                "HighCut Slope",
                                                                 filterArray, 0));
         
         // These parameters are all added to our APVTS by the createParameterLayout call in PluginProcessor.h
